@@ -1,6 +1,7 @@
 import ReactDom from 'react-dom'
 import './index.css'
 import { useState } from 'react'
+import Restart from './img/restart.png'
 
 const Square = (props) => {
     return (
@@ -17,19 +18,20 @@ const Board = () => {
     const initialSquares = Array(9).fill(null)
     const [squares, setSquares] = useState(initialSquares)
     const [xIsNext, setXIsNext] = useState(true)
+    const [gameOver, setGameOver] = useState(false)
 
     const handleClickEvent = (i) => {
+        if (gameOver || squares[i]) return
         const newSquares = [...squares]
-
-        const winnerDeclared = Boolean(calculateWinner(newSquares))
-        const squareFilled = Boolean(newSquares[i])
-        if(winnerDeclared || squareFilled) {
-            return
-        }
-
         newSquares[i] = xIsNext ? 'X' : 'O'
         setSquares(newSquares)
         setXIsNext(!xIsNext)
+
+        const winner = calculateWinner(newSquares)
+        const boardFull = newSquares.every(square => square !== null)
+        if (winner || boardFull) {
+            setGameOver(true)
+        }
     }
 
     const renderSquare = (i) => {
@@ -41,20 +43,38 @@ const Board = () => {
         )
     }
 
+    const restartGame = () => {
+        setSquares(initialSquares)
+        setXIsNext(true)
+        setGameOver(false)
+    }
+
     const winner = calculateWinner(squares)
-    const status = winner ? `Winner: ${winner}` : `Next player: ${xIsNext ? 'X' : 'O'}`
+    const status = winner ? `Winner: ${winner}` : gameOver ? 'Draw' : `Next player: ${xIsNext ? 'X' : 'O'}`
 
     return (
         <div className='board'>
-            <div className='status'>{status}</div>
-            <div className='board-row'>
-                {renderSquare(1)}{renderSquare(2)}{renderSquare(3)}
+            <div className='status'>
+                {status}
+                {gameOver &&
+                    <div className='restart-btn' onClick={restartGame}>
+                        <img
+                            src={Restart}
+                            alt='Restart Button'
+                        />
+                        Restart
+                    </div>
+                }
+
             </div>
             <div className='board-row'>
-                {renderSquare(4)}{renderSquare(5)}{renderSquare(6)}
+                {renderSquare(0)}{renderSquare(1)}{renderSquare(2)}
             </div>
             <div className='board-row'>
-                {renderSquare(7)}{renderSquare(8)}{renderSquare(9)}
+                {renderSquare(3)}{renderSquare(4)}{renderSquare(5)}
+            </div>
+            <div className='board-row'>
+                {renderSquare(6)}{renderSquare(7)}{renderSquare(8)}
             </div>
         </div>
     )
@@ -63,7 +83,9 @@ const Board = () => {
 const Game = () => {
     return (
         <div className='game'>
-            Tic-Tac-Toe
+            <div className='header'>
+                Tic-Tac-Toe
+            </div>
             <Board />
         </div>
     )
